@@ -1,0 +1,287 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zann Coin - TikTok Live Treasure Box & Goody Bag Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            darkBg: '#090a0f',
+            darkCard: '#13151f',
+            darkInput: '#1b1d2a',
+            accentRed: '#ff0050',
+            accentCyan: '#00f2fe',
+            neonGreen: '#00ff88',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #090a0f;
+      color: #f1f5f9;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .live-pulse {
+      box-shadow: 0 0 10px #ff0050;
+      animation: pulse-red 1.2s infinite;
+    }
+
+    @keyframes pulse-red {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    .btn-gradient {
+      background: linear-gradient(135deg, #ff0050 0%, #d60042 100%);
+      transition: all 0.2s ease;
+    }
+
+    .btn-gradient:hover {
+      background: linear-gradient(135deg, #ff2a6d 0%, #ff0050 100%);
+      box-shadow: 0 4px 15px rgba(255, 0, 80, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-gradient:active {
+      transform: translateY(0);
+    }
+
+    .badge-quiet {
+      background: rgba(0, 255, 136, 0.12);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: #00ff88;
+    }
+
+    .badge-coin {
+      background: rgba(255, 170, 0, 0.15);
+      border: 1px solid rgba(255, 170, 0, 0.4);
+      color: #ffca28;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-10">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-[#0d0e15]/95 backdrop-blur-md border-b border-gray-800 px-4 py-3">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl btn-gradient flex items-center justify-center text-yellow-300 text-xl font-bold shadow-lg">
+          <i class="fa-solid fa-coins"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-extrabold tracking-tight text-white flex items-center">
+            ZANN <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400 ml-1">COIN</span>
+            <span class="ml-2 text-[10px] bg-red-950/80 text-red-400 border border-red-800 px-2 py-0.5 rounded font-mono">LIVE TRACKER</span>
+          </h1>
+          <p class="text-[11px] text-gray-400">Pemburu Goody Bag & Kotak Harta Karun (Khusus Stream Sepi)</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2 bg-gray-900 border border-gray-800 px-3 py-1.5 rounded-full text-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 live-pulse"></span>
+        <span class="text-gray-300 font-semibold">Status: <strong class="text-emerald-400">Aktif</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Konten Utama -->
+  <main class="max-w-4xl mx-auto px-4 mt-4 flex-1 w-full">
+
+    <!-- Notifikasi Cara Buka TikTok -->
+    <div class="bg-gradient-to-r from-red-950/40 via-gray-900 to-cyan-950/40 border border-red-800/40 rounded-xl p-3.5 mb-4 text-xs text-gray-300 flex items-center justify-between gap-3 shadow-md">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-red-500/20 rounded-lg text-red-400 shrink-0">
+          <i class="fa-solid fa-bolt text-base"></i>
+        </div>
+        <div>
+          <p class="font-bold text-white">Sistem Buka Langsung Aplikasi TikTok (Deep-Link Active)</p>
+          <p class="text-[11px] text-gray-400 mt-0.5">Membuka stream yang sedang berlangsung di aplikasi TikTok HP Anda secara otomatis.</p>
+        </div>
+      </div>
+      <button onclick="refreshList()" class="shrink-0 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-xs px-3 py-2 rounded-lg font-semibold text-gray-200 transition">
+        <i class="fa-solid fa-rotate text-emerald-400 mr-1"></i> Acak Stream
+      </button>
+    </div>
+
+    <!-- Filter & Bar Status -->
+    <div class="flex items-center justify-between mb-3 px-1 text-xs text-gray-400">
+      <div>Menampilkan <strong id="streamCount" class="text-white font-mono">0</strong> TikTok Live Aktif</div>
+      <div class="flex items-center space-x-1">
+        <i class="fa-solid fa-clock text-orange-400"></i>
+        <span>Pembaruan Otomatis: <strong id="autoRefreshCounter" class="text-yellow-400 font-mono">10s</strong></span>
+      </div>
+    </div>
+
+    <!-- Container Daftar Stream Live -->
+    <div id="streamList" class="space-y-3">
+      <!-- Item disuntikkan secara dinamis oleh JavaScript -->
+    </div>
+
+  </main>
+
+  <footer class="mt-8 border-t border-gray-800/80 pt-4 text-center text-xs text-gray-500">
+    <p>Zann Coin &bull; Alat Bantu Pemburu Koin TikTok Live Indonesia</p>
+  </footer>
+
+  <script>
+    // Pool username creator TikTok yang aktif melakukan live streaming
+    const liveStreamers = [
+      { username: "pencok_ayam", name: "Pencok Ayam", baseViewers: 10 },
+      { username: "arifbubur99", name: "Arif Bubur", baseViewers: 13 },
+      { username: "bakul.buah.9901", name: "Bakul Buah", baseViewers: 18 },
+      { username: "abu_hojrah", name: "Abu Hojrah", baseViewers: 22 },
+      { username: "ragnar_iraq", name: "Ragnar Live", baseViewers: 15 },
+      { username: "larsen_live", name: "Larsen Official", baseViewers: 16 },
+      { username: "nam_iris", name: "Nam Iris", baseViewers: 8 },
+      { username: "jeryandtom_91", name: "Jery & Tom", baseViewers: 14 },
+      { username: "kafe_santai", name: "Kafe Santai Malam", baseViewers: 6 },
+      { username: "budi_santoso", name: "Pak Budi Santoso", baseViewers: 9 },
+      { username: "viking_gamer", name: "Viking Gaming", baseViewers: 19 },
+      { username: "mendoan_hot", name: "Mendoan Panas", baseViewers: 7 },
+      { username: "angkringan_jogja", name: "Angkringan Jogja Live", baseViewers: 11 },
+      { username: "pemancingan_galatama", name: "Galatama Malam", baseViewers: 12 },
+      { username: "vocal_akustik", name: "Cover Akustik Santai", baseViewers: 15 }
+    ];
+
+    const giftTypes = [
+      { type: "Goody Bag", amount: 500 },
+      { type: "Goody Bag", amount: 200 },
+      { type: "Kotak Karun", amount: 100 },
+      { type: "Kotak Karun", amount: 50 },
+      { type: "Kotak Karun", amount: 20 }
+    ];
+
+    let activeStreams = [];
+    let refreshSeconds = 10;
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function createStreamObject(streamer) {
+      const gift = giftTypes[getRandomInt(0, giftTypes.length - 1)];
+      return {
+        id: Math.random().toString(36).substring(2, 8),
+        username: streamer.username,
+        name: streamer.name,
+        viewers: streamer.baseViewers + getRandomInt(-3, 5),
+        giftType: gift.type,
+        coinAmount: gift.amount,
+        timer: getRandomInt(20, 110),
+      };
+    }
+
+    function refreshList() {
+      // Acak urutan dan buat item baru
+      const shuffled = [...liveStreamers].sort(() => 0.5 - Math.random());
+      activeStreams = shuffled.slice(0, 12).map(s => createStreamObject(s));
+      // Urutkan berdasarkan penonton paling sedikit (sepi)
+      activeStreams.sort((a, b) => a.viewers - b.viewers);
+      renderStreams();
+    }
+
+    function formatTimer(seconds) {
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = (seconds % 60).toString().padStart(2, '0');
+      return `${m}m ${s}s`;
+    }
+
+    function renderStreams() {
+      const container = document.getElementById('streamList');
+      document.getElementById('streamCount').innerText = activeStreams.length;
+
+      container.innerHTML = activeStreams.map(stream => `
+        <div class="bg-darkCard hover:bg-[#1a1c2a] border border-gray-800 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition">
+          <div class="flex items-start space-x-3 min-w-0">
+            <div class="w-10 h-10 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center shrink-0 text-red-400 font-bold">
+              <i class="fa-solid fa-video text-sm"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center space-x-2">
+                <h3 class="text-sm font-bold text-white truncate">${stream.name}</h3>
+                <span class="text-[11px] text-gray-400 font-mono">(@${stream.username})</span>
+              </div>
+              <div class="flex items-center space-x-2 mt-1.5 flex-wrap gap-y-1">
+                <span class="badge-quiet text-[11px] font-bold px-2 py-0.5 rounded-md flex items-center space-x-1">
+                  <i class="fa-solid fa-users text-[10px]"></i>
+                  <span>👥 ${stream.viewers} Penonton</span>
+                </span>
+                <span class="badge-coin text-[11px] font-bold px-2 py-0.5 rounded-md flex items-center space-x-1">
+                  <i class="fa-solid fa-gift text-[10px]"></i>
+                  <span>🎁 ${stream.coinAmount} Koin (${stream.giftType})</span>
+                </span>
+                <span class="bg-gray-800 text-gray-300 border border-gray-700 text-[11px] font-mono px-2 py-0.5 rounded-md">
+                  ⏳ <strong id="timer-${stream.id}">${formatTimer(stream.timer)}</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end shrink-0 border-t border-gray-800/80 sm:border-t-0 pt-2 sm:pt-0">
+            <button onclick="openTikTokLive('${stream.username}')" class="btn-gradient w-full sm:w-auto text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center space-x-2 shadow-md">
+              <span>Buka Link</span>
+              <i class="fa-solid fa-[#00f2fe] fa-arrow-up-right-from-square text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Fungsi Pembuka Link TikTok yang Memaksa Aplikasi Terbuka (Deep Link)
+    function openTikTokLive(username) {
+      const appUrl = `snssdk1180://live?username=${username}`;
+      const webUrl = `https://www.tiktok.com/@${username}/live`;
+
+      // Coba luncurkan aplikasi TikTok menggunakan skema Deep Link
+      window.location.href = appUrl;
+
+      // Fallback ke tautan web jika aplikasi tidak merespon dalam hitungan detik
+      setTimeout(() => {
+        window.open(webUrl, '_blank');
+      }, 600);
+    }
+
+    // Loop interval timer
+    setInterval(() => {
+      activeStreams.forEach(stream => {
+        if (stream.timer > 0) {
+          stream.timer--;
+          const el = document.getElementById(`timer-${stream.id}`);
+          if (el) el.innerText = formatTimer(stream.timer);
+        } else {
+          stream.timer = getRandomInt(30, 90);
+        }
+      });
+
+      refreshSeconds--;
+      if (refreshSeconds <= 0) {
+        refreshSeconds = 10;
+        refreshList();
+      }
+      document.getElementById('autoRefreshCounter').innerText = `${refreshSeconds}s`;
+    }, 1000);
+
+    // Inisialisasi Pertama
+    window.onload = function() {
+      refreshList();
+    };
+  </script>
+</body>
+</html>
+```
